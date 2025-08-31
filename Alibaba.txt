@@ -1,0 +1,169 @@
+# coding: utf-8
+
+import os
+import sys
+import time
+import random
+import threading
+import requests
+from multiprocessing.pool import ThreadPool
+
+# Clear terminal
+os.system('clear' if os.name == 'posix' else 'cls')
+
+# Mock credentials
+CorrectKey = 'Ashu123'
+
+# Login loop
+while True:
+    key = input('\033[1;91mENTER TOOL KEY…………=>> :\033[1;93m ')
+    if key == CorrectKey:
+        print('\033[1;92m Logged in successfully as Janii!')
+        time.sleep(1)
+        os.system('clear' if os.name == 'posix' else 'cls')
+        break
+    else:
+        print('\033[1;93m Wrong Key!')
+        time.sleep(1)
+        os.system('clear' if os.name == 'posix' else 'cls')
+
+# Generate random phone numbers
+if os.path.exists('.numbers.txt'):
+    os.remove('.numbers.txt')
+
+with open('.numbers.txt', 'w') as f:
+    for _ in range(40000):
+        nmbr = random.randint(1111111, 9999999)
+        f.write(str(nmbr) + '\n')
+
+# Headers
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Linux; Android 10; SM-G975F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Mobile Safari/537.36'
+}
+
+# Utility functions
+def jalan(text):
+    for char in text + '\n':
+        sys.stdout.write(char)
+        sys.stdout.flush()
+        time.sleep(0.015)
+
+def tik():
+    dots = ['   ', '.  ', '.. ', '...', '.. ', '.  ', '   ']
+    for dot in dots:
+        print(f'\r\033[1;96m Loading\033[1;0m\033[1;96m{dot}', end='')
+        sys.stdout.flush()
+        time.sleep(0.5)
+
+# Logo
+logo = """
+\033[1;94m=======================================
+       RANDOM DATA GENERATOR & API TESTER
+=======================================
+ Author   : Ashu
+ Version  : 1.0
+ Purpose  : Educational API Testing
+=======================================
+"""
+
+logo1 = """
+\033[1;94mSELECT COUNTRY CODE
+\033[1;96m[1] Pakistan \033[1;97m +92300, +92301, +92302
+\033[1;96m[2] India   \033[1;97m +91900, +91901, +91902
+\033[1;96m[3] USA     \033[1;97m +1201, +1202, +1203
+\033[1;96m[4] UK      \033[1;97m +44700, +44701, +44702
+\033[1;96m[5] Custom  \033[1;97m Enter your own code
+"""
+
+# Results storage
+success = []
+failed = []
+lock = threading.Lock()
+
+def menu():
+    os.system('clear' if os.name == 'posix' else 'cls')
+    print(logo)
+    print(47 * '-')
+    jalan('\033[1;96m[1] Start Random Number Testing')
+    jalan('\033[1;96m[0] Exit')
+    print(47 * '-')
+    action()
+
+def action():
+    global success, failed
+    choice = input('\033[1;96mSelect Option: ')
+    
+    if choice == '1':
+        tik()
+        os.system('clear' if os.name == 'posix' else 'cls')
+        print(logo)
+        print(logo1)
+        country_code = input('\033[1;97mEnter Country Code (e.g., +92300): ')
+        idlist = '.numbers.txt'
+        
+        try:
+            with open(idlist, 'r') as f:
+                id_numbers = [line.strip() for line in f]
+        except IOError:
+            print('\033[1;91m[!] File Not Found')
+            input('\n[ Back ]')
+            menu()
+        
+        os.system('clear' if os.name == 'posix' else 'cls')
+        print(logo)
+        jalan('\033[1;97mTesting numbers. Run in background and check every 10 minutes.')
+        print(47 * '-')
+        jalan(f'\033[1;97mTotal Numbers: \033[1;95m{len(id_numbers)}')
+        print(47 * '-')
+
+        def test_number(number):
+            try:
+                url = f'https://api.example.com/test?phone={country_code}{number}'
+                response = requests.get(url, headers=headers, timeout=5)
+                
+                try:
+                    data = response.json()
+                except ValueError:
+                    data = {}
+
+                with lock:
+                    if data.get('status') == 'success':
+                        print(f'\033[1;92m[Success] {country_code}{number}')
+                        with open('Alibaba-786.txt', 'a') as f:
+                            f.write(f'{country_code}{number}\n')
+                        success.append(number)
+                    else:
+                        print(f'\033[1;91m[Failed] {country_code}{number}')
+                        with open('Alibaba-786.txt', 'a') as f:
+                            f.write(f'{country_code}{number}\n')
+                        failed.append(number)
+            except Exception as e:
+                with lock:
+                    print(f"Error testing {number}: {e}")
+
+        # Create save directory
+        os.makedirs('save', exist_ok=True)
+        
+        # Run tests in parallel
+        with ThreadPool(30) as pool:
+            pool.map(test_number, id_numbers)
+        
+        print(48 * '-')
+        print(f'Process Completed!')
+        print(f'Total Success: {len(success)}')
+        print(f'Total Failed: {len(failed)}')
+        print(47 * '-')
+        jalan('Results saved in Alibaba-786.txt and Alibaba-786.txt')
+        input('\n\033[1;95m[Press Enter to Return]')
+        menu()
+    
+    elif choice == '0':
+        print('\033[1;91m[!] Exiting...')
+        sys.exit()
+    
+    else:
+        print('\033[1;91m[!] Invalid Option')
+        action()
+
+if __name__ == '__main__':
+    menu()
